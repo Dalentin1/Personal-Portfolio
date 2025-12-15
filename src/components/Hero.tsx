@@ -1,99 +1,93 @@
 import React, { useState, useEffect } from "react";
-import { motion as motionOriginal } from "framer-motion";
+import { motion as motionOriginal, useAnimation } from "framer-motion";
 import { ArrowRight, Download } from "lucide-react";
 import { smoothScrollTo } from "../utils/smoothScroll";
+import { GithubIcon, LinkedinIcon, XIcon } from "./Icons";
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
 
-// Custom SVG Icons to replace deprecated Lucide brand icons
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36.5-8 4-2.64-3.5-5.36-4.5-8-4-1 0-3 .5-3 3.5-.28 1.15-.28 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-    <path d="M9 18c-4.51 2-5-2-7-2" />
-  </svg>
-);
-
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect width="4" height="12" x="2" y="9" />
-    <circle cx="4" cy="4" r="2" />
-  </svg>
-);
-
-const XIcon = ({ className }: { className?: string }) => (
-  <svg
-    role="img"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M4 4l11.733 16h4.667L8.667 4H4z" />
-    <path d="M4 20l6.768-6.768m2.46-2.46L20 4" />
-  </svg>
-);
-
 /**
  * Hero Component
  *
- * Features:
- * - Robust entrance animations.
- * - Interactive buttons with hover states.
- * - Typewriter text effect for subheadline (Loops every 2 mins).
+ * This component is the first section the user sees. It features:
+ * 1. A dynamic typewriter effect for the "Welcome" badge.
+ * 2. A typewriter effect for the subheadline text.
+ * 3. A "bending" animation for the profile/hero image that triggers immediately and loops.
+ * 4. Responsive design (stacks on mobile, side-by-side on desktop).
  */
 const Hero: React.FC = () => {
+  // Text content definitions
   const subheadlineText =
     "I build accessible, pixel-perfect, and performant web experiences. Specialized in the React ecosystem with deep expertise in Next.js architecture.";
+  const welcomeText = "Welcome to my portfolio";
 
-  // State to trigger re-animation of the text
+  // State to trigger re-animation of the subheadline text (Counter increments to force re-render)
   const [subheadlineKey, setSubheadlineKey] = useState(0);
 
-  // Loop to re-run the animation every 2 minutes
+  // State to trigger re-animation of the "Welcome" badge
+  const [badgeKey, setBadgeKey] = useState(0);
+
+  // Animation controls for the image bending effect.
+  // allows us to imperatively start the animation via JavaScript.
+  const imageControls = useAnimation();
+
+  // ----------------------------------------------------------------
+  // ANIMATION TIMERS
+  // ----------------------------------------------------------------
+
+  // 1. Subheadline Typewriter Loop
+  // Re-runs the text animation every 2 minutes (120,000ms)
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // Incrementing key forces React to unmount and remount the component,
-      // restarting the entrance animation.
       setSubheadlineKey((prev) => prev + 1);
-    }, 120000); // 2 minutes in milliseconds
+    }, 120000);
 
     return () => clearInterval(intervalId);
   }, []);
 
-  // Animation Variants
+  // 2. Welcome Badge Loop
+  // Re-runs the badge typing animation every 30 seconds (30,000ms)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setBadgeKey((prev) => prev + 1);
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // 3. Image Bending/Tilt Animation Loop
+  // Triggers immediately on load, then repeats every 25 seconds.
+  useEffect(() => {
+    // STEP 1: Trigger animation immediately when component mounts/page refreshes
+    imageControls.start("bend");
+
+    // STEP 2: Set up the interval to repeat the animation
+    const intervalId = setInterval(() => {
+      imageControls.start("bend");
+    }, 25000); // 25 seconds interval
+
+    // STEP 3: Cleanup interval on unmount to prevent memory leaks
+    return () => clearInterval(intervalId);
+  }, [imageControls]);
+
+  // ----------------------------------------------------------------
+  // ANIMATION VARIANTS (Framer Motion Config)
+  // ----------------------------------------------------------------
+
+  // Controls the staggered entrance of the left column content
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
+        staggerChildren: 0.2, // Delay between each child element appearing
+        delayChildren: 0.3, // Initial delay before sequence starts
       },
     },
   };
 
+  // Controls the slide-up and fade-in of individual items (Headers, Buttons)
   const itemVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
@@ -101,28 +95,40 @@ const Hero: React.FC = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1], // Custom bezier for a premium "pop" feel
       },
     },
   };
 
-  // Typewriter effect variants
+  // Controls the typewriter effect for text containers
   const typewriterVariants = {
     hidden: { opacity: 1 },
     visible: {
       opacity: 1,
       transition: {
-        delayChildren: 0.6, // Wait for H1 to finish roughly
-        staggerChildren: 0.05, // Speed of typing
+        staggerChildren: 0.05, // Speed of typing (time between letters)
       },
     },
   };
 
+  // Controls individual letters in the typewriter effect
   const letterVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.1 },
+      transition: { duration: 0.01 },
+    },
+  };
+
+  // Controls the "Bending" image animation
+  const bendVariants = {
+    initial: { rotate: 0 },
+    bend: {
+      rotate: [0, 6, -6, 4, -4, 0], // Keyframes: Center -> Right -> Left -> Right -> Left -> Center
+      transition: {
+        duration: 2.5,
+        ease: "easeInOut",
+      },
     },
   };
 
@@ -136,27 +142,45 @@ const Hero: React.FC = () => {
       id="home"
       className="min-h-screen flex items-center justify-center pt-20 relative overflow-hidden"
     >
-      {/* Static Background Glows */}
+      {/* Static Background Glows (Visual candy) */}
       <div className="absolute top-0 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] pointer-events-none" />
 
       <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
-        {/* Left Column: Text Content */}
-        {/* Changed 'whileInView' to 'animate' to guarantee animation on page load */}
+        {/* ------------------------------------------------------- */}
+        {/* LEFT COLUMN: Text Content                               */}
+        {/* ------------------------------------------------------- */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="text-center md:text-left"
         >
-          {/* Badge */}
-          <motion.div
-            variants={itemVariants}
-            className="inline-block px-4 py-2 bg-slate-800/50 rounded-full border border-slate-700 mb-6 backdrop-blur-sm"
-          >
-            <span className="text-primary font-mono text-sm">
-              Welcome to my portfolio
+          {/* Badge: "Welcome to my portfolio" */}
+          <div className="inline-block px-4 py-2 bg-slate-800/50 rounded-full border border-slate-700 mb-6 backdrop-blur-sm min-w-[200px] text-center md:text-left">
+            <motion.span
+              key={badgeKey} // Changing key triggers complete re-render of component
+              variants={typewriterVariants}
+              initial="hidden"
+              animate="visible"
+              className="text-primary font-mono text-sm"
+            >
+              {welcomeText.split("").map((char, index) => (
+                <motion.span key={index} variants={letterVariants}>
+                  {char}
+                </motion.span>
+              ))}
+            </motion.span>
+          </div>
+
+          {/* Intro Name */}
+          <motion.div variants={itemVariants} className="mb-2">
+            <span className="text-2xl md:text-3xl font-medium text-slate-300">
+              Hello I'm
             </span>
+            <h2 className="text-4xl md:text-5xl font-bold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              Patrick (Paddy) Nnodu
+            </h2>
           </motion.div>
 
           {/* Main Headline */}
@@ -164,7 +188,7 @@ const Hero: React.FC = () => {
             variants={itemVariants}
             className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-white"
           >
-            Next.js Expert & <br />
+            A Next.js Expert & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
               React Developer
             </span>
@@ -172,10 +196,10 @@ const Hero: React.FC = () => {
 
           {/* Subheadline with Typewriter Effect */}
           <motion.p
-            key={subheadlineKey} // Key change triggers re-render/re-animation
+            key={subheadlineKey} // Forces re-animation every 2 minutes
             variants={typewriterVariants}
-            initial="hidden" // Ensure it starts hidden on re-render
-            animate="visible" // Ensure it animates to visible
+            initial="hidden"
+            animate="visible"
             aria-label={subheadlineText}
             className="text-slate-400 text-lg md:text-xl mb-8 max-w-lg leading-relaxed mx-auto md:mx-0 min-h-[5rem]"
           >
@@ -183,7 +207,6 @@ const Hero: React.FC = () => {
               <motion.span
                 key={`${char}-${index}`}
                 variants={letterVariants}
-                // Using aria-hidden="true" because the parent <p> has the full text label
                 aria-hidden="true"
               >
                 {char}
@@ -223,7 +246,7 @@ const Hero: React.FC = () => {
             {/* Download CV Button */}
             <motion.a
               href="/resume.pdf"
-              download="Developer_CV.pdf"
+              download="Patrick_Nnodu_CV.pdf"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 bg-transparent text-slate-200 font-bold rounded-lg border border-slate-700 hover:bg-slate-800/50 hover:text-white hover:border-slate-500 transition-colors cursor-pointer flex items-center gap-2 group"
@@ -262,58 +285,76 @@ const Hero: React.FC = () => {
           </motion.div>
         </motion.div>
 
-        {/* Right Column: Visual Element */}
+        {/* ------------------------------------------------------- */}
+        {/* RIGHT COLUMN: Visual Element (Image + Decor)            */}
+        {/* ------------------------------------------------------- */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative hidden md:block"
+          className="relative block mt-12 md:mt-0"
         >
-          {/* Main Image Card */}
-          <div className="relative z-10 w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-card">
-            <img
-              src="https://picsum.photos/800/800"
-              alt="Developer Workspace"
-              className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
-            />
+          {/* 
+             Inner Wrapper for Bending Animation 
+             This is where 'imageControls' applies the rotation.
+          */}
+          <motion.div
+            variants={bendVariants}
+            animate={imageControls}
+            initial="initial"
+          >
+            {/* Main Image Card */}
+            <div className="relative z-10 w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-card">
+              <img
+                src="https://picsum.photos/800/800"
+                alt="Developer Workspace"
+                className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
+              />
 
-            {/* Floating Badge 1 (Top Right) */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }} // Floating bobbing animation
-              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="absolute top-8 right-8 bg-dark/90 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="font-mono text-sm font-bold">
-                  Next.js Ready
-                </span>
-              </div>
-            </motion.div>
+              {/* Floating Badge 1 (Top Right) */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }} // Independent bobbing animation
+                transition={{
+                  repeat: Infinity,
+                  duration: 4,
+                  ease: "easeInOut",
+                }}
+                className="absolute top-8 right-8 bg-dark/90 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-xl"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span className="font-mono text-sm font-bold">
+                    Next.js 14 Ready
+                  </span>
+                </div>
+              </motion.div>
 
-            {/* Floating Badge 2 (Bottom Left) */}
-            <motion.div
-              animate={{ y: [0, 10, 0] }} // Counter-phase bobbing
-              transition={{
-                repeat: Infinity,
-                duration: 5,
-                ease: "easeInOut",
-                delay: 1,
-              }}
-              className="absolute bottom-8 left-8 bg-dark/90 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-xl"
-            >
-              <div className="text-center">
-                <span className="block text-2xl font-bold text-white">5+</span>
-                <span className="text-xs text-slate-400 uppercase tracking-wider">
-                  Years Exp
-                </span>
-              </div>
-            </motion.div>
-          </div>
+              {/* Floating Badge 2 (Bottom Left) */}
+              <motion.div
+                animate={{ y: [0, 10, 0] }} // Independent bobbing animation (counter-phase)
+                transition={{
+                  repeat: Infinity,
+                  duration: 5,
+                  ease: "easeInOut",
+                  delay: 1,
+                }}
+                className="absolute bottom-8 left-8 bg-dark/90 backdrop-blur border border-slate-700 p-4 rounded-xl shadow-xl"
+              >
+                <div className="text-center">
+                  <span className="block text-2xl font-bold text-white">
+                    5+
+                  </span>
+                  <span className="text-xs text-slate-400 uppercase tracking-wider">
+                    Years Exp
+                  </span>
+                </div>
+              </motion.div>
+            </div>
 
-          {/* Geometric Decoration Borders */}
-          <div className="absolute -top-10 -right-10 w-full h-full border border-primary/20 rounded-2xl -z-10" />
-          <div className="absolute -bottom-10 -left-10 w-full h-full border border-secondary/20 rounded-2xl -z-10" />
+            {/* Geometric Decoration Borders (Scales/Rotates with parent) */}
+            <div className="absolute -top-10 -right-10 w-full h-full border border-primary/20 rounded-2xl -z-10" />
+            <div className="absolute -bottom-10 -left-10 w-full h-full border border-secondary/20 rounded-2xl -z-10" />
+          </motion.div>
         </motion.div>
       </div>
     </section>

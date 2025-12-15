@@ -1,7 +1,8 @@
 import React from "react";
 import { motion as motionOriginal } from "framer-motion";
 import { Project } from "@/types";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { GithubIcon } from "./Icons";
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
@@ -91,7 +92,7 @@ const Projects: React.FC = () => {
                     href={project.link}
                     className="p-3 bg-white text-dark rounded-full hover:bg-primary hover:text-white transition-colors"
                   >
-                    <Github className="w-5 h-5" />
+                    <GithubIcon className="w-5 h-5" />
                   </a>
                   <a
                     href={project.link}

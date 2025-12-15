@@ -8,25 +8,24 @@ import {
   Palette,
   Globe,
   Box,
+  Database,
+  Server,
+  GitBranch,
+  Terminal,
+  Zap,
 } from "lucide-react";
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
 
 // Skills Data Definition
-// This maps specific percentages to skill names for the visual bars
 const skills: Skill[] = [
+  // Frontend & Mobile
   {
     name: "Next.js",
     level: 95,
     category: "frontend",
     icon: <Globe className="w-5 h-5" />,
-  },
-  {
-    name: "CSS",
-    level: 90,
-    category: "styles",
-    icon: <Palette className="w-5 h-5" />,
   },
   {
     name: "React",
@@ -35,22 +34,94 @@ const skills: Skill[] = [
     icon: <Box className="w-5 h-5" />,
   },
   {
-    name: "HTML",
-    level: 80,
+    name: "TypeScript",
+    level: 88,
     category: "frontend",
     icon: <FileCode className="w-5 h-5" />,
-  },
-  {
-    name: "SASS",
-    level: 70,
-    category: "styles",
-    icon: <Layers className="w-5 h-5" />,
   },
   {
     name: "React Native",
     level: 65,
     category: "mobile",
     icon: <Smartphone className="w-5 h-5" />,
+  },
+
+  // Styles
+  {
+    name: "Tailwind CSS",
+    level: 92,
+    category: "styles",
+    icon: <Palette className="w-5 h-5" />,
+  },
+  {
+    name: "CSS",
+    level: 90,
+    category: "styles",
+    icon: <Palette className="w-5 h-5" />,
+  },
+  {
+    name: "SASS",
+    level: 81,
+    category: "styles",
+    icon: <Layers className="w-5 h-5" />,
+  },
+  {
+    name: "Chakra UI",
+    level: 78,
+    category: "styles",
+    icon: <Zap className="w-5 h-5" />,
+  },
+  {
+    name: "HTML",
+    level: 80,
+    category: "frontend",
+    icon: <FileCode className="w-5 h-5" />,
+  },
+
+  // Backend & APIs
+  {
+    name: "Next API",
+    level: 95,
+    category: "backend",
+    icon: <Server className="w-5 h-5" />,
+  },
+  {
+    name: "Node.js",
+    level: 90,
+    category: "backend",
+    icon: <Server className="w-5 h-5" />,
+  },
+  {
+    name: "REST API",
+    level: 88,
+    category: "backend",
+    icon: <Globe className="w-5 h-5" />,
+  },
+  {
+    name: "Postgres SQL",
+    level: 84,
+    category: "backend",
+    icon: <Database className="w-5 h-5" />,
+  },
+  {
+    name: "Prisma",
+    level: 85,
+    category: "backend",
+    icon: <Database className="w-5 h-5" />,
+  },
+
+  // Tools
+  {
+    name: "Git/Github",
+    level: 90,
+    category: "tools",
+    icon: <GitBranch className="w-5 h-5" />,
+  },
+  {
+    name: "Vercel",
+    level: 89,
+    category: "tools",
+    icon: <Terminal className="w-5 h-5" />,
   },
 ];
 
@@ -67,7 +138,7 @@ const SkillBar: React.FC<{ skill: Skill; index: number }> = ({
   index,
 }) => {
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       {/* Header: Icon, Name, and Percentage */}
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2 text-white font-medium">
@@ -78,7 +149,7 @@ const SkillBar: React.FC<{ skill: Skill; index: number }> = ({
       </div>
 
       {/* Progress Bar Container (Gray Background) */}
-      <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden">
         {/* Animated Progress Bar (Gradient) */}
         <motion.div
           initial={{ width: 0 }} // Start at 0 width
@@ -123,30 +194,31 @@ const Skills: React.FC = () => {
         </motion.div>
 
         {/* Skills Grid - Split into 2 columns for better readability */}
-        <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-          {/* Column 1: JS Frameworks */}
+        <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          {/* Column 1: Frontend Ecosystem */}
           <div>
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-800 pb-2">
-              Core Frameworks
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-800 pb-2 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-primary" /> Frontend Ecosystem
             </h3>
             {skills
               .filter((s) =>
-                ["Next.js", "React", "React Native"].includes(s.name)
+                ["frontend", "mobile", "styles"].includes(s.category)
               )
               .map((skill, idx) => (
                 <SkillBar key={skill.name} skill={skill} index={idx} />
               ))}
           </div>
 
-          {/* Column 2: Styling Languages */}
+          {/* Column 2: Backend & Infrastructure */}
           <div>
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-800 pb-2">
-              Styling & Markup
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-800 pb-2 flex items-center gap-2">
+              <Server className="w-5 h-5 text-primary" /> Backend &
+              Infrastructure
             </h3>
             {skills
-              .filter((s) => ["CSS", "HTML", "SASS"].includes(s.name))
+              .filter((s) => ["backend", "tools"].includes(s.category))
               .map((skill, idx) => (
-                <SkillBar key={skill.name} skill={skill} index={idx + 3} />
+                <SkillBar key={skill.name} skill={skill} index={idx + 6} />
               ))}
           </div>
         </div>
