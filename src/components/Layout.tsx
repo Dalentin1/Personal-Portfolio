@@ -36,7 +36,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Footer */}
       <footer className="relative z-10 bg-dark/50 border-t border-slate-800 py-8 text-center text-slate-500 text-sm backdrop-blur-sm">
-        <p>&copy;{new Date().getFullYear()} (PaddyCyber💻)</p>
+        <p>
+          &copy;{new Date().getFullYear()} (PaddyCyber💻). All rights reserved.
+        </p>
       </footer>
     </div>
   );
