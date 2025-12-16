@@ -1,17 +1,18 @@
 import React from "react";
 import { motion as motionOriginal } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { TypewriterText } from "./TypewriterText";
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
 
 /**
  * Contact Section Component
- *
- * Displays contact info and a functional form layout.
- * Split into two columns: Contact Details vs Contact Form.
  */
 const Contact: React.FC = () => {
+  const introText =
+    "I'm currently available for freelance work and full-time positions. If you have a project that needs some React magic or a Next.js overhaul, get in touch.";
+
   return (
     <section
       id="contact"
@@ -21,7 +22,7 @@ const Contact: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-16">
           {/* Left Column: Contact Information */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }} // Slide in from left
+            initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: false, amount: 0.3 }}
@@ -29,17 +30,30 @@ const Contact: React.FC = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Let's Work Together
             </h2>
-            <p className="text-slate-400 mb-8 leading-relaxed">
-              I'm currently available for freelance work and full-time
-              positions. If you have a project that needs some React magic or a
-              Next.js overhaul, get in touch.
-            </p>
+
+            {/* Typewriter Effect for Description */}
+            <div className="mb-8 min-h-[5rem]">
+              <TypewriterText
+                text={introText}
+                className="text-slate-400 leading-relaxed block"
+                speed={0.015}
+              />
+            </div>
 
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-slate-800 rounded-lg text-primary">
+                {/* Bouncing Email Icon Container - 2s duration */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2,
+                    ease: "easeInOut",
+                  }}
+                  className="p-3 bg-slate-800 rounded-lg text-primary"
+                >
                   <Mail className="w-6 h-6" />
-                </div>
+                </motion.div>
                 <div>
                   <h4 className="text-white font-semibold">Email</h4>
                   <p className="text-slate-400">hello@developer.com</p>
@@ -47,9 +61,19 @@ const Contact: React.FC = () => {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-slate-800 rounded-lg text-primary">
+                {/* Bouncing Phone Icon Container - 2.4s duration, delayed start */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2.4,
+                    ease: "easeInOut",
+                    delay: 0.3,
+                  }}
+                  className="p-3 bg-slate-800 rounded-lg text-primary"
+                >
                   <Phone className="w-6 h-6" />
-                </div>
+                </motion.div>
                 <div>
                   <h4 className="text-white font-semibold">Phone</h4>
                   <p className="text-slate-400">+1 (555) 123-4567</p>
@@ -57,9 +81,19 @@ const Contact: React.FC = () => {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-slate-800 rounded-lg text-primary">
+                {/* Bouncing Location Icon Container - 1.8s duration, delayed start */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.8,
+                    ease: "easeInOut",
+                    delay: 0.6,
+                  }}
+                  className="p-3 bg-slate-800 rounded-lg text-primary"
+                >
                   <MapPin className="w-6 h-6" />
-                </div>
+                </motion.div>
                 <div>
                   <h4 className="text-white font-semibold">Location</h4>
                   <p className="text-slate-400">San Francisco, CA</p>
@@ -70,7 +104,7 @@ const Contact: React.FC = () => {
 
           {/* Right Column: Contact Form */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }} // Slide in from right
+            initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: false, amount: 0.3 }}

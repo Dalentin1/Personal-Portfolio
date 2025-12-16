@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion as motionOriginal, useAnimation } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  motion as motionOriginal,
+  useAnimation,
+  useInView,
+} from "framer-motion";
 import { ArrowRight, Download } from "lucide-react";
 import { smoothScrollTo } from "../utils/smoothScroll";
 import { GithubIcon, LinkedinIcon, XIcon } from "./Icons";
@@ -10,84 +14,66 @@ const motion = motionOriginal as any;
 /**
  * Hero Component
  *
- * This component is the first section the user sees. It features:
- * 1. A dynamic typewriter effect for the "Welcome" badge.
- * 2. A typewriter effect for the subheadline text.
- * 3. A "bending" animation for the profile/hero image that triggers immediately and loops.
- * 4. Responsive design (stacks on mobile, side-by-side on desktop).
+ * Features:
+ * - Dynamic typewriter effect.
+ * - Image bending animation.
+ * - Refactored to trigger animations every time the section comes into view.
  */
 const Hero: React.FC = () => {
-  // Text content definitions
   const subheadlineText =
     "I build accessible, pixel-perfect, and performant web experiences. Specialized in the React ecosystem with deep expertise in Next.js architecture.";
   const welcomeText = "Welcome to my portfolio";
 
-  // State to trigger re-animation of the subheadline text (Counter increments to force re-render)
   const [subheadlineKey, setSubheadlineKey] = useState(0);
-
-  // State to trigger re-animation of the "Welcome" badge
   const [badgeKey, setBadgeKey] = useState(0);
 
-  // Animation controls for the image bending effect.
-  // allows us to imperatively start the animation via JavaScript.
   const imageControls = useAnimation();
 
-  // ----------------------------------------------------------------
-  // ANIMATION TIMERS
-  // ----------------------------------------------------------------
+  // Use a ref to track the section's visibility
+  const ref = useRef(null);
+  // once: false ensures it triggers every time the element enters/leaves the viewport
+  const isInView = useInView(ref, { once: false, amount: 0.3 });
 
-  // 1. Subheadline Typewriter Loop
-  // Re-runs the text animation every 2 minutes (120,000ms)
+  // Reset/Replay intervals (Optional: keeping them keeps the section "alive" if the user stares at it)
   useEffect(() => {
     const intervalId = setInterval(() => {
       setSubheadlineKey((prev) => prev + 1);
     }, 120000);
-
     return () => clearInterval(intervalId);
   }, []);
 
-  // 2. Welcome Badge Loop
-  // Re-runs the badge typing animation every 30 seconds (30,000ms)
   useEffect(() => {
     const intervalId = setInterval(() => {
       setBadgeKey((prev) => prev + 1);
     }, 30000);
-
     return () => clearInterval(intervalId);
   }, []);
 
-  // 3. Image Bending/Tilt Animation Loop
-  // Triggers immediately on load, then repeats every 25 seconds.
   useEffect(() => {
-    // STEP 1: Trigger animation immediately when component mounts/page refreshes
-    imageControls.start("bend");
-
-    // STEP 2: Set up the interval to repeat the animation
-    const intervalId = setInterval(() => {
+    // Start bending animation when in view
+    if (isInView) {
       imageControls.start("bend");
-    }, 25000); // 25 seconds interval
+    }
 
-    // STEP 3: Cleanup interval on unmount to prevent memory leaks
+    const intervalId = setInterval(() => {
+      if (isInView) {
+        imageControls.start("bend");
+      }
+    }, 25000);
     return () => clearInterval(intervalId);
-  }, [imageControls]);
+  }, [imageControls, isInView]);
 
-  // ----------------------------------------------------------------
-  // ANIMATION VARIANTS (Framer Motion Config)
-  // ----------------------------------------------------------------
-
-  // Controls the staggered entrance of the left column content
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2, // Delay between each child element appearing
-        delayChildren: 0.3, // Initial delay before sequence starts
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
       },
     },
   };
 
-  // Controls the slide-up and fade-in of individual items (Headers, Buttons)
   const itemVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
@@ -95,23 +81,21 @@ const Hero: React.FC = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: [0.22, 1, 0.36, 1], // Custom bezier for a premium "pop" feel
+        ease: [0.22, 1, 0.36, 1],
       },
     },
   };
 
-  // Controls the typewriter effect for text containers
   const typewriterVariants = {
     hidden: { opacity: 1 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05, // Speed of typing (time between letters)
+        staggerChildren: 0.05,
       },
     },
   };
 
-  // Controls individual letters in the typewriter effect
   const letterVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -120,11 +104,10 @@ const Hero: React.FC = () => {
     },
   };
 
-  // Controls the "Bending" image animation
   const bendVariants = {
     initial: { rotate: 0 },
     bend: {
-      rotate: [0, 6, -6, 4, -4, 0], // Keyframes: Center -> Right -> Left -> Right -> Left -> Center
+      rotate: [0, 6, -6, 4, -4, 0],
       transition: {
         duration: 2.5,
         ease: "easeInOut",
@@ -140,29 +123,26 @@ const Hero: React.FC = () => {
   return (
     <section
       id="home"
+      ref={ref}
       className="min-h-screen flex items-center justify-center pt-20 relative overflow-hidden"
     >
-      {/* Static Background Glows (Visual candy) */}
       <div className="absolute top-0 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-[128px] pointer-events-none" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-secondary/20 rounded-full blur-[128px] pointer-events-none" />
 
       <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
-        {/* ------------------------------------------------------- */}
-        {/* LEFT COLUMN: Text Content                               */}
-        {/* ------------------------------------------------------- */}
+        {/* LEFT COLUMN: Text Content */}
+        {/* We use animate={isInView ...} to force reset when scrolling out */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
+          animate={isInView ? "visible" : "hidden"}
           className="text-center md:text-left"
         >
-          {/* Badge: "Welcome to my portfolio" */}
           <div className="inline-block px-4 py-2 bg-slate-800/50 rounded-full border border-slate-700 mb-6 backdrop-blur-sm min-w-[200px] text-center md:text-left">
+            {/* Removed explicit animate/initial to inherit from parent container */}
             <motion.span
-              key={badgeKey} // Changing key triggers complete re-render of component
+              key={badgeKey}
               variants={typewriterVariants}
-              initial="hidden"
-              animate="visible"
               className="text-primary font-mono text-sm"
             >
               {welcomeText.split("").map((char, index) => (
@@ -173,17 +153,15 @@ const Hero: React.FC = () => {
             </motion.span>
           </div>
 
-          {/* Intro Name */}
           <motion.div variants={itemVariants} className="mb-2">
             <span className="text-2xl md:text-3xl font-medium text-slate-300">
-              Hello I'm
+              Hello 👋 I'm
             </span>
             <h2 className="text-4xl md:text-5xl font-bold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              Patrick (Paddy) Nnodu
+              Patrick Nnodu (Paddy)
             </h2>
           </motion.div>
 
-          {/* Main Headline */}
           <motion.h1
             variants={itemVariants}
             className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-white"
@@ -194,12 +172,9 @@ const Hero: React.FC = () => {
             </span>
           </motion.h1>
 
-          {/* Subheadline with Typewriter Effect */}
           <motion.p
-            key={subheadlineKey} // Forces re-animation every 2 minutes
+            key={subheadlineKey}
             variants={typewriterVariants}
-            initial="hidden"
-            animate="visible"
             aria-label={subheadlineText}
             className="text-slate-400 text-lg md:text-xl mb-8 max-w-lg leading-relaxed mx-auto md:mx-0 min-h-[5rem]"
           >
@@ -214,10 +189,12 @@ const Hero: React.FC = () => {
             ))}
           </motion.p>
 
-          {/* Action Buttons */}
+          {/* 
+            Action Buttons
+          */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-wrap gap-4 mb-10 justify-center md:justify-start"
+            className="flex flex-col sm:flex-row flex-wrap gap-4 mb-10 justify-center md:justify-start"
           >
             <motion.a
               href="#projects"
@@ -226,7 +203,7 @@ const Hero: React.FC = () => {
               }
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-primary text-white font-bold rounded-lg flex items-center gap-2 shadow-lg shadow-primary/25 hover:bg-blue-600 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/25 hover:bg-blue-600 transition-colors cursor-pointer"
             >
               View Projects <ArrowRight className="w-5 h-5" />
             </motion.a>
@@ -238,18 +215,17 @@ const Hero: React.FC = () => {
               }
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-slate-800 text-white font-bold rounded-lg border border-slate-700 hover:bg-slate-700 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white font-bold rounded-lg border border-slate-700 hover:bg-slate-700 transition-colors cursor-pointer text-center"
             >
               Contact Me
             </motion.a>
 
-            {/* Download CV Button */}
             <motion.a
               href="/resume.pdf"
               download="Patrick_Nnodu_CV.pdf"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-transparent text-slate-200 font-bold rounded-lg border border-slate-700 hover:bg-slate-800/50 hover:text-white hover:border-slate-500 transition-colors cursor-pointer flex items-center gap-2 group"
+              className="w-full sm:w-auto px-8 py-4 bg-transparent text-slate-200 font-bold rounded-lg border border-slate-700 hover:bg-slate-800/50 hover:text-white hover:border-slate-500 transition-colors cursor-pointer flex items-center justify-center gap-2 group"
             >
               Download CV{" "}
               <Download className="w-5 h-5 group-hover:animate-bounce" />
@@ -285,35 +261,29 @@ const Hero: React.FC = () => {
           </motion.div>
         </motion.div>
 
-        {/* ------------------------------------------------------- */}
-        {/* RIGHT COLUMN: Visual Element (Image + Decor)            */}
-        {/* ------------------------------------------------------- */}
+        {/* RIGHT COLUMN: Visual Element */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          animate={
+            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
+          }
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative block mt-12 md:mt-0"
         >
-          {/* 
-             Inner Wrapper for Bending Animation 
-             This is where 'imageControls' applies the rotation.
-          */}
           <motion.div
             variants={bendVariants}
             animate={imageControls}
             initial="initial"
           >
-            {/* Main Image Card */}
             <div className="relative z-10 w-full aspect-square rounded-2xl overflow-hidden border-2 border-slate-700 shadow-2xl bg-card">
               <img
-                src="https://picsum.photos/800/800"
+                src="/paddy.jpg"
                 alt="Developer Workspace"
                 className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-500"
               />
 
-              {/* Floating Badge 1 (Top Right) */}
               <motion.div
-                animate={{ y: [0, -10, 0] }} // Independent bobbing animation
+                animate={{ y: [0, -10, 0] }}
                 transition={{
                   repeat: Infinity,
                   duration: 4,
@@ -324,14 +294,13 @@ const Hero: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                   <span className="font-mono text-sm font-bold">
-                    Next.js 14 Ready
+                    Next.js Ready
                   </span>
                 </div>
               </motion.div>
 
-              {/* Floating Badge 2 (Bottom Left) */}
               <motion.div
-                animate={{ y: [0, 10, 0] }} // Independent bobbing animation (counter-phase)
+                animate={{ y: [0, 10, 0] }}
                 transition={{
                   repeat: Infinity,
                   duration: 5,
@@ -351,7 +320,6 @@ const Hero: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Geometric Decoration Borders (Scales/Rotates with parent) */}
             <div className="absolute -top-10 -right-10 w-full h-full border border-primary/20 rounded-2xl -z-10" />
             <div className="absolute -bottom-10 -left-10 w-full h-full border border-secondary/20 rounded-2xl -z-10" />
           </motion.div>

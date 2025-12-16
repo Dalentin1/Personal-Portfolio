@@ -3,12 +3,11 @@ import { motion as motionOriginal } from "framer-motion";
 import { Project } from "@/types";
 import { ExternalLink } from "lucide-react";
 import { GithubIcon } from "./Icons";
+import { TypewriterText } from "./TypewriterText";
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
 
-// Sample Project Data
-// In a real app, this might come from a CMS or API
 const projects: Project[] = [
   {
     id: 1,
@@ -39,12 +38,10 @@ const projects: Project[] = [
   },
 ];
 
-/**
- * Projects Section Component
- *
- * Displays a grid of project cards with hover effects.
- */
 const Projects: React.FC = () => {
+  const introText =
+    "A selection of projects that demonstrate my ability to solve complex problems and deliver high-quality digital products.";
+
   return (
     <section id="projects" className="py-24 bg-card/30 relative">
       <div className="container mx-auto px-6">
@@ -59,11 +56,37 @@ const Projects: React.FC = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Featured Projects
           </h2>
-          <div className="w-20 h-1.5 bg-primary mx-auto rounded-full mb-4" />
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            A selection of projects that demonstrate my ability to solve complex
-            problems and deliver high-quality digital products.
-          </p>
+
+          {/* 
+             ANIMATED GRADIENT SEPARATOR
+             Replaces the static bg-gradient div with a moving gradient loop.
+             Gradient: Blue -> Cyan -> Indigo -> Blue
+          */}
+          <motion.div
+            className="w-24 h-1.5 mx-auto rounded-full mb-4"
+            style={{
+              background:
+                "linear-gradient(90deg, #3b82f6, #06b6d4, #6366f1, #3b82f6)",
+              backgroundSize: "200% 100%",
+            }}
+            animate={{
+              backgroundPosition: ["0% center", "200% center"],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+
+          {/* Added Typewriter effect to intro text */}
+          <div className="min-h-[3rem] max-w-2xl mx-auto">
+            <TypewriterText
+              text={introText}
+              className="text-slate-400"
+              speed={0.02}
+            />
+          </div>
         </motion.div>
 
         {/* Project Cards Grid */}
@@ -71,22 +94,18 @@ const Projects: React.FC = () => {
           {projects.map((project, index) => (
             <motion.div
               key={project.id}
-              // Card Entrance Animation
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }} // Staggered delay based on index
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: false, amount: 0.1 }}
               className="bg-card rounded-xl overflow-hidden border border-slate-800 hover:border-primary/50 transition-colors group"
             >
-              {/* Image Container with Overlay */}
               <div className="relative overflow-hidden h-48">
                 <img
                   src={project.imageUrl}
                   alt={project.title}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
-
-                {/* Hover Overlay: Shows Github and Link buttons */}
                 <div className="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
                   <a
                     href={project.link}
@@ -103,7 +122,6 @@ const Projects: React.FC = () => {
                 </div>
               </div>
 
-              {/* Content Container */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2">
                   {project.title}
@@ -112,15 +130,25 @@ const Projects: React.FC = () => {
                   {project.description}
                 </p>
 
-                {/* Tech Stack Tags */}
+                {/* Tech Stack Tags - Heartbeat Animation */}
                 <div className="flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <span
+                  {project.tags.map((tag, tagIndex) => (
+                    <motion.span
                       key={tag}
+                      // Apply heartbeat animation (scaling) to the span box itself
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{
+                        repeat: Infinity,
+                        // Vary duration (e.g. 1.2s to 2.1s) to desynchronize
+                        duration: 1.2 + (tagIndex % 3) * 0.3,
+                        ease: "easeInOut",
+                        // Randomize start time slightly
+                        delay: tagIndex * 0.2,
+                      }}
                       className="px-3 py-1 bg-slate-800 text-xs font-medium text-primary rounded-full border border-slate-700"
                     >
                       {tag}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
               </div>

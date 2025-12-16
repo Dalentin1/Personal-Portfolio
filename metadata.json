@@ -1,5 +1,11 @@
 {
-  "name": "DevPortfolio Pro",
+  "application name": "patrick Nnodu Portfolio",
+  "author": "Patrick Nnodu",
+  "authors": [
+    { "name": "Patrick Nnodu", "url": "https://github.com/Dalentin1" }
+  ],
+  "keywords": ["react", "typescript", "Developer Portfolio", "framer-motion"],
+  "generator": "React TypeScript Vite Template",
   "description": "A high-performance professional portfolio showcasing full-stack development skills with a focus on Next.js and React ecosystem.",
   "requestFramePermissions": []
 }

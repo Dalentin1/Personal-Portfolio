@@ -1,70 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { motion as motionOriginal, AnimatePresence } from "framer-motion";
+import React from "react";
+import { motion as motionOriginal } from "framer-motion";
 import { Code, Cpu, Globe, Zap, Database } from "lucide-react";
+import { TypewriterText } from "./TypewriterText"; // Importing the new reusable component
 
 // Cast motion to any to avoid type errors with motion props
 const motion = motionOriginal as any;
 
 /**
- * TypewriterText Component
- *
- * Handles the specific logic for:
- * 1. Typing text character by character.
- * 2. Looping the animation periodically.
- *
- * Update: Cursor animation has been removed.
- */
-const TypewriterText: React.FC<{ text: string }> = ({ text }) => {
-  const [key, setKey] = useState(0); // Used to force re-render/restart animation
-
-  useEffect(() => {
-    // Total Cycle Duration: 20 seconds
-    const CYCLE_DURATION = 20000;
-
-    const loop = setInterval(() => {
-      // Reset the text animation
-      setKey((prev) => prev + 1);
-    }, CYCLE_DURATION);
-
-    return () => {
-      clearInterval(loop);
-    };
-  }, []);
-
-  // Split text for individual character animation
-  const characters = text.split("");
-
-  return (
-    <div className="min-h-[3.5rem] relative">
-      {" "}
-      {/* min-h prevents layout shift */}
-      <motion.p
-        key={key}
-        className="text-slate-400 max-w-2xl mx-auto text-lg inline"
-      >
-        {characters.map((char, index) => (
-          <motion.span
-            key={index}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.05, delay: index * 0.03 }}
-          >
-            {char}
-          </motion.span>
-        ))}
-      </motion.p>
-    </div>
-  );
-};
-
-/**
  * GradientBorderCard Component
- *
- * Wraps content in a container with a moving gradient border.
- *
- * Props:
- * - duration: How long one full rotation takes (seconds).
- * - reverse: If true, spins counter-clockwise.
+ * Used for the Stats (Projects, Clients)
  */
 interface GradientCardProps {
   children: React.ReactNode;
@@ -79,11 +23,6 @@ const GradientBorderCard: React.FC<GradientCardProps> = ({
 }) => {
   return (
     <div className="relative group rounded-xl overflow-hidden p-[2px]">
-      {/* 
-        The Spinning Gradient Layer 
-        - inset-[-100%] makes it large enough to cover corners during rotation
-        - conic-gradient creates the "beam" effect
-      */}
       <motion.div
         animate={{ rotate: reverse ? -360 : 360 }}
         transition={{
@@ -91,14 +30,75 @@ const GradientBorderCard: React.FC<GradientCardProps> = ({
           duration: duration,
           ease: "linear",
         }}
-        className="absolute inset-[-100%] bg-[conic-gradient(from_90deg_at_50%_50%,#0f172a_0%,#3b82f6_50%,#0f172a_100%)] opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity duration-500"
+        className="absolute inset-[-100%] bg-[conic-gradient(from_90deg_at_50%_50%,#0f172a_0%,#3b82f6_50%,#0f172a_100%)] opacity-100 transition-opacity duration-500"
       />
 
-      {/* Content Mask (The "Inside" of the box) */}
       <div className="relative bg-dark h-full w-full rounded-xl p-6 flex flex-col justify-center items-center text-center">
         {children}
       </div>
     </div>
+  );
+};
+
+/**
+ * FeatureCard Component
+ *
+ * Logic:
+ * - Shows an animated gradient border (via p-[2px] and a spinning background layer) on ALL screens.
+ *
+ * Update: Removed desktop-specific hiding (lg:hidden) and static borders so animation plays on desktop too.
+ */
+interface FeatureCardProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  delay: number;
+  variants: any;
+  reverse?: boolean; // New prop for controlling rotation direction
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  icon: Icon,
+  title,
+  description,
+  delay,
+  variants,
+  reverse = false,
+}) => {
+  return (
+    <motion.div
+      variants={variants}
+      className="relative group rounded-xl overflow-hidden p-[2px]"
+    >
+      {/* 
+        Animated Gradient Layer 
+        - Visible on all screens
+        - Direction controlled by `reverse` prop
+      */}
+      <motion.div
+        animate={{ rotate: reverse ? -360 : 360 }}
+        transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+        className="absolute inset-[-100%] bg-[conic-gradient(from_90deg_at_50%_50%,#0f172a_0%,#3b82f6_50%,#0f172a_100%)]"
+      />
+
+      {/* Content Container */}
+      <div className="relative bg-card h-full p-6 rounded-xl transition-colors">
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: delay,
+          }}
+          className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors"
+        >
+          <Icon className="w-6 h-6 text-primary group-hover:text-white" />
+        </motion.div>
+        <h4 className="text-white font-bold mb-2">{title}</h4>
+        <p className="text-slate-400 text-sm">{description}</p>
+      </div>
+    </motion.div>
   );
 };
 
@@ -132,9 +132,13 @@ const About: React.FC = () => {
     },
   };
 
-  // Text content for the typewriter effect
+  // Content Strings
   const introText =
     "Passionate about bridging the gap between engineering and design. I build software that is not only functional but also intuitive and beautiful.";
+  const bioPara1 =
+    "I am a versatile Full Stack Developer capable of architecting and building complete web applications from start to finish. With over 5 years of experience, I specialize in the Next.js ecosystem, handling everything from responsive UIs to secure backend APIs.";
+  const bioPara2 =
+    "My journey began with frontend design, but I quickly evolved to master the server-side. I now leverage tools like Node.js, Postgres, and Prisma to build robust data layers, while maintaining a pixel-perfect standard on the client side using Tailwind CSS and TypeScript.";
 
   return (
     <section id="about" className="py-24 bg-dark relative z-10">
@@ -144,18 +148,39 @@ const About: React.FC = () => {
           variants={sectionVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.1 }} // FIX: Changed 'once' to true to stop glitching
           className="max-w-6xl mx-auto"
         >
-          {/* Section Header with Typewriter Effect */}
+          {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               About Me
             </h2>
-            <div className="w-20 h-1.5 bg-primary mx-auto rounded-full mb-6" />
 
-            {/* Replaced static paragraph with Typewriter Component */}
-            <TypewriterText text={introText} />
+            {/* 
+               ANIMATED GRADIENT SEPARATOR
+            */}
+            <motion.div
+              className="w-24 h-1.5 mx-auto rounded-full mb-6"
+              style={{
+                background:
+                  "linear-gradient(90deg, #3b82f6, #06b6d4, #6366f1, #3b82f6)",
+                backgroundSize: "200% 100%",
+              }}
+              animate={{
+                backgroundPosition: ["0% center", "200% center"],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            />
+
+            {/* Header Typewriter Effect - Uses new component */}
+            <div className="min-h-[3rem] text-lg text-slate-400 max-w-2xl mx-auto">
+              <TypewriterText text={introText} speed={0.02} />
+            </div>
           </motion.div>
 
           {/* Two-Column Content Layout */}
@@ -169,50 +194,32 @@ const About: React.FC = () => {
                 Who I am
               </motion.h3>
 
-              <div className="space-y-4">
-                <motion.p
-                  variants={itemVariants}
-                  className="text-slate-400 leading-relaxed"
-                >
-                  I am a versatile{" "}
-                  <span className="text-white font-semibold">
-                    Full Stack Developer
-                  </span>{" "}
-                  capable of architecting and building complete web applications
-                  from start to finish. With over{" "}
-                  <span className="text-primary font-semibold">
-                    5 years of experience
-                  </span>
-                  , I specialize in the Next.js ecosystem, handling everything
-                  from responsive UIs to secure backend APIs.
-                </motion.p>
-
-                <motion.p
-                  variants={itemVariants}
-                  className="text-slate-400 leading-relaxed"
-                >
-                  My journey began with frontend design, but I quickly evolved
-                  to master the server-side. I now leverage tools like{" "}
-                  <span className="text-white">
-                    Node.js, Postgres, and Prisma
-                  </span>{" "}
-                  to build robust data layers, while maintaining a pixel-perfect
-                  standard on the client side using
-                  <span className="text-white">
-                    {" "}
-                    Tailwind CSS and TypeScript
-                  </span>
-                  .
-                </motion.p>
+              {/* Bio Paragraph 1 - Typewriter */}
+              <div className="min-h-[6rem]">
+                <TypewriterText
+                  text={bioPara1}
+                  className="text-slate-400 leading-relaxed block"
+                  delay={0.5} // Wait for header to finish
+                  speed={0.01}
+                />
               </div>
 
-              {/* Key Stats / Highlights - SEPARATED & ANIMATED */}
-              {/* Added grid to separate the two stats */}
+              {/* Bio Paragraph 2 - Typewriter */}
+              <div className="min-h-[6rem]">
+                <TypewriterText
+                  text={bioPara2}
+                  className="text-slate-400 leading-relaxed block"
+                  delay={2.5} // Wait for first para to finish approx
+                  speed={0.01}
+                />
+              </div>
+
+              {/* Key Stats / Highlights */}
               <motion.div
                 variants={itemVariants}
                 className="pt-4 grid grid-cols-2 gap-6"
               >
-                {/* Stat 1: Projects - Standard Speed, Clockwise */}
+                {/* Stat 1: Projects */}
                 <GradientBorderCard duration={4} reverse={false}>
                   <span className="block text-4xl font-bold text-white mb-1">
                     50+
@@ -222,7 +229,7 @@ const About: React.FC = () => {
                   </span>
                 </GradientBorderCard>
 
-                {/* Stat 2: Clients - Slower Speed, Counter-Clockwise */}
+                {/* Stat 2: Clients */}
                 <GradientBorderCard duration={5} reverse={true}>
                   <span className="block text-4xl font-bold text-white mb-1">
                     20+
@@ -239,99 +246,41 @@ const About: React.FC = () => {
               variants={listVariants}
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
-              {/* Card 1: Full Stack */}
-              <motion.div
+              <FeatureCard
+                icon={Database}
+                title="Full Stack"
+                description="Seamless integration between frontend UIs and backend databases."
+                delay={0}
                 variants={itemVariants}
-                className="p-6 bg-card border border-slate-800 rounded-xl hover:border-primary/50 transition-colors group cursor-default"
-              >
-                {/* Added Bouncing Animation to Icon Container */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }} // Bounce Up and Down
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors"
-                >
-                  <Database className="w-6 h-6 text-primary group-hover:text-white" />
-                </motion.div>
-                <h4 className="text-white font-bold mb-2">Full Stack</h4>
-                <p className="text-slate-400 text-sm">
-                  Seamless integration between frontend UIs and backend
-                  databases.
-                </p>
-              </motion.div>
+                reverse={false} // Clockwise
+              />
 
-              {/* Card 2: Clean Code */}
-              <motion.div
+              <FeatureCard
+                icon={Code}
+                title="Clean Code"
+                description="I write maintainable, scalable, and self-documenting code."
+                delay={0.5}
                 variants={itemVariants}
-                className="p-6 bg-card border border-slate-800 rounded-xl hover:border-primary/50 transition-colors group cursor-default"
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.5, // Staggered bounce
-                  }}
-                  className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors"
-                >
-                  <Code className="w-6 h-6 text-primary group-hover:text-white" />
-                </motion.div>
-                <h4 className="text-white font-bold mb-2">Clean Code</h4>
-                <p className="text-slate-400 text-sm">
-                  I write maintainable, scalable, and self-documenting code.
-                </p>
-              </motion.div>
+                reverse={true} // Counter-Clockwise
+              />
 
-              {/* Card 3: Responsive */}
-              <motion.div
+              <FeatureCard
+                icon={Globe}
+                title="Responsive"
+                description="Mobile-first approach ensures your site looks perfect anywhere."
+                delay={1.0}
                 variants={itemVariants}
-                className="p-6 bg-card border border-slate-800 rounded-xl hover:border-primary/50 transition-colors group cursor-default"
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1.0,
-                  }}
-                  className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors"
-                >
-                  <Globe className="w-6 h-6 text-primary group-hover:text-white" />
-                </motion.div>
-                <h4 className="text-white font-bold mb-2">Responsive</h4>
-                <p className="text-slate-400 text-sm">
-                  Mobile-first approach ensures your site looks perfect
-                  anywhere.
-                </p>
-              </motion.div>
+                reverse={false} // Clockwise
+              />
 
-              {/* Card 4: Modern Tech */}
-              <motion.div
+              <FeatureCard
+                icon={Cpu}
+                title="Modern Tech"
+                description="Leveraging Server Actions, SSR, and Edge Computing."
+                delay={1.5}
                 variants={itemVariants}
-                className="p-6 bg-card border border-slate-800 rounded-xl hover:border-primary/50 transition-colors group cursor-default"
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 1.5,
-                  }}
-                  className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary transition-colors"
-                >
-                  <Cpu className="w-6 h-6 text-primary group-hover:text-white" />
-                </motion.div>
-                <h4 className="text-white font-bold mb-2">Modern Tech</h4>
-                <p className="text-slate-400 text-sm">
-                  Leveraging Server Actions, SSR, and Edge Computing.
-                </p>
-              </motion.div>
+                reverse={true} // Counter-Clockwise
+              />
             </motion.div>
           </div>
         </motion.div>
