@@ -84,12 +84,12 @@ const Header: React.FC = () => {
               <Code2 className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-white tracking-tight">
-              PaddyCyber<span className="text-primary">Portfolio</span>
+              Dev<span className="text-primary">Portfolio</span>
             </span>
           </a>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -113,7 +113,7 @@ const Header: React.FC = () => {
 
           {/* Mobile Menu Toggle Button */}
           <button
-            className="md:hidden text-white p-2 relative z-50"
+            className="lg:hidden text-white p-2 relative z-50"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -130,7 +130,7 @@ const Header: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-40 bg-dark md:hidden flex items-center justify-center"
+            className="fixed inset-0 z-40 bg-dark lg:hidden flex items-center justify-center"
           >
             {/* Background Pattern for Menu */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-800/50 to-dark -z-10" />
